@@ -12,7 +12,7 @@ var cfgFile string
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "shared-2fa",
-	Short: "A brief description of your application",
+	Short: "Tool to save TOTP seed in AWS SecretsManager and use for token generation",
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.

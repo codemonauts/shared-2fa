@@ -14,7 +14,7 @@ import (
 
 var listCmd = &cobra.Command{
 	Use:   "list",
-	Short: "A brief description of your command",
+	Short: "List all available entries",
 	Run: func(cmd *cobra.Command, args []string) {
 		svc := secretsmanager.New(session.New(&aws.Config{
 			Region: aws.String(config.AWS_REGION),

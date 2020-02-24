@@ -10,6 +10,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/secretsmanager"
+	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 	"github.com/xlzd/gotp"
 )
@@ -43,10 +44,19 @@ var generateCmd = &cobra.Command{
 		totp := gotp.NewDefaultTOTP(e.Seed)
 		key, expiration := totp.NowWithExpiration()
 		exp := expiration - time.Now().Unix()
-		fmt.Printf("%s (Expires in %ds)\n", key, exp)
+		fmt.Printf("%s (%s)\n", key, colorExpiration(exp))
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(generateCmd)
+}
+
+func colorExpiration(duration int64) string {
+	s := fmt.Sprintf("Expires in %ds", duration)
+	if duration < 10 {
+		return color.RedString(s)
+	} else {
+		return s
+	}
 }

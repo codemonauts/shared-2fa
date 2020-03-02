@@ -21,12 +21,15 @@ var addCmd = &cobra.Command{
 		fullName := fmt.Sprintf("%s%s", config.NAME_PREFIX, name)
 		token := strings.ReplaceAll(strings.ToUpper(args[1]), " ", "")
 
+		forceFlag, _ := cmd.Flags().GetBool("force")
+
 		sess, err := session.NewSessionWithOptions(session.Options{})
 		svc := ssm.New(sess, aws.NewConfig().WithRegion(config.AWS_REGION))
 		input := &ssm.PutParameterInput{
-			Name:  aws.String(fullName),
-			Value: aws.String(token),
-			Type:  aws.String("SecureString"),
+			Name:      aws.String(fullName),
+			Value:     aws.String(token),
+			Type:      aws.String("SecureString"),
+			Overwrite: aws.Bool(forceFlag),
 		}
 		_, err = svc.PutParameter(input)
 		if err != nil {
@@ -39,4 +42,5 @@ var addCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(addCmd)
+	addCmd.Flags().BoolP("force", "f", false, "Overwrite existing entries")
 }

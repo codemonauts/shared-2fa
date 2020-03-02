@@ -1,28 +1,18 @@
 # shared-2fa
 
 Sometimes you have an account for a website which you share with your team so
-everybody can use it, but still want to enable 2FA for enhances security.
+everybody can use it, but still want to enable 2FA for enhanced security.
 This tool helps you to share a virtual TOTP based MFA-device with your team
-by saving the intial seed at AWS SecretsManager.
+by saving the intial seed at the parameter store of AWS SecureSystemManager.
 
 ## Pricing
-SecretsManager is charged both per secret and per API call. Every secret
-costs 0.40\$/Month what will be the main operational costs of this tool. API
-calls cost you 0.05$/10.000 requests what you will probably never reach in a
-month even with a large team using this tool multiple times a day.
-
-### Ways to recude the costs
-Paying 0.40\$/month/secret can quickly sum up if you have a lot of accounts.
-Because every value in AWS SecretsManager is a JSON object you could save all
-seeds in a single key/value pair instead of one pair per account and cap the
-monthly costs 0.40\$/month by this, the downside is, that you would loose the
-way to limit access by IAM to single secrets. Therefore we didn't implemented
-it this way.
+Using this tool will not produce any costs in your AWS account.
 
 ## IAM permissions
 With this example policy one can use all features of this tool. If you want
-people to have only the ability to generate tokens, you can remove the
+people to have only the ability to generate tokens, you can just remove the
 `Delete` and `Create` actions.
+
 ```
 {
     "Version": "2012-10-17",
@@ -31,18 +21,16 @@ people to have only the ability to generate tokens, you can remove the
             "Sid": "VisualEditor0",
             "Effect": "Allow",
             "Action": [
-                "secretsmanager:GetSecretValue",
-                "secretsmanager:DeleteSecret"
+                "ssm:PutParameter",
+                "ssm:DeleteParameter",
+                "ssm:GetParameter"
             ],
-            "Resource": "arn:aws:secretsmanager:eu-central-1:<your-account-id>:secret:2fa-*"
+            "Resource": "arn:aws:ssm:eu-central-1:<your-account-id>:parameter/2fa-*"
         },
         {
             "Sid": "VisualEditor1",
             "Effect": "Allow",
-            "Action": [
-                "secretsmanager:CreateSecret",
-                "secretsmanager:ListSecrets"
-            ],
+            "Action": "ssm:DescribeParameters",
             "Resource": "*"
         }
     ]
@@ -51,8 +39,7 @@ people to have only the ability to generate tokens, you can remove the
 
 ## Usage
 In order to use this tool, you need to have a set of AWS API Keys in the
-[default configuration
-file](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html#cli-configure-files-where).
+[default configuration file](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html#cli-configure-files-where).
 If you have used the aws-cli before, you are already good to go :)
 
 ### add

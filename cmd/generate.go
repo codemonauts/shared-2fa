@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"encoding/json"
 	"fmt"
 	"time"
 
@@ -9,7 +8,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/secretsmanager"
+	"github.com/aws/aws-sdk-go/service/ssm"
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 	"github.com/xlzd/gotp"
@@ -25,23 +24,24 @@ var generateCmd = &cobra.Command{
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		name := args[0]
-		secretID := fmt.Sprintf("%s%s", config.SECRETS_PREFIX, name)
-		svc := secretsmanager.New(session.New(&aws.Config{
-			Region: aws.String(config.AWS_REGION),
-		}))
-		input := &secretsmanager.GetSecretValueInput{
-			SecretId: aws.String(secretID),
+		fullName := fmt.Sprintf("%s%s", config.NAME_PREFIX, name)
+
+		sess, err := session.NewSessionWithOptions(session.Options{})
+		svc := ssm.New(sess, aws.NewConfig().WithRegion(config.AWS_REGION))
+
+		input := &ssm.GetParameterInput{
+			Name:           aws.String(fullName),
+			WithDecryption: aws.Bool(true),
 		}
 
-		result, err := svc.GetSecretValue(input)
+		data, err := svc.GetParameter(input)
+
 		if err != nil {
-			fmt.Printf("Couldn't get entry from secrets manager: %s\n", err.Error())
+			fmt.Printf("Couldn't get entry from parameter store: %s\n", err.Error())
 			return
 		}
 
-		var e Entry
-		json.Unmarshal([]byte(*result.SecretString), &e)
-		totp := gotp.NewDefaultTOTP(e.Seed)
+		totp := gotp.NewDefaultTOTP(*data.Parameter.Value)
 		key, expiration := totp.NowWithExpiration()
 		exp := expiration - time.Now().Unix()
 		fmt.Printf("%s (%s)\n", key, colorExpiration(exp))

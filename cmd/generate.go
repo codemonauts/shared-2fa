@@ -6,6 +6,7 @@ import (
 
 	"github.com/codemonauts/shared-2fa/config"
 
+	"github.com/atotto/clipboard"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ssm"
@@ -44,12 +45,22 @@ var generateCmd = &cobra.Command{
 		totp := gotp.NewDefaultTOTP(*data.Parameter.Value)
 		key, expiration := totp.NowWithExpiration()
 		exp := expiration - time.Now().Unix()
+
+		clipboardFlag, _ := cmd.Flags().GetBool("clipboard")
+		if clipboardFlag {
+			if clipboard.Unsupported {
+				color.Red("Clipboard functionality is not supported on your system")
+			} else {
+				clipboard.WriteAll(key)
+			}
+		}
 		fmt.Printf("%s (%s)\n", key, colorExpiration(exp))
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(generateCmd)
+	generateCmd.Flags().BoolP("clipboard", "c", false, "Write token to clipboard")
 }
 
 func colorExpiration(duration int64) string {

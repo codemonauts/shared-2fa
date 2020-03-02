@@ -3,6 +3,7 @@ module github.com/codemonauts/shared-2fa
 go 1.13
 
 require (
+	github.com/atotto/clipboard v0.1.2
 	github.com/aws/aws-sdk-go v1.29.7
 	github.com/fatih/color v1.9.0
 	github.com/mitchellh/go-homedir v1.1.0

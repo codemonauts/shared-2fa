@@ -1,4 +1,5 @@
 # shared-2fa
+[![Join Rocketchat Badge](https://codemonauts.rocket.chat/api/v1/shield.svg)](https://codemonauts.rocket.chat)
 
 Sometimes you have an account for a website which you share with your team so
 everybody can use it, but still want to enable 2FA for enhanced security.

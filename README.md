@@ -7,7 +7,16 @@ This tool helps you to share a virtual TOTP based MFA-device with your team
 by saving the intial seed at the parameter store of AWS SecureSystemManager.
 
 ## Pricing
-Using this tool will not produce any costs in your AWS account.
+Using this tool will probably not produce any AWS costs for you.
+Storing/Getting Parameters in the ParameterStore is
+[free](https://aws.amazon.com/systems-manager/pricing/#Parameter_Store). The
+only operations that will get charged by AWS is when you generate a token,
+because in the background the tool has to retrieve the parameter from the
+ParameterStore and because the parameters are encrypted this will make a call
+to KMS to get the encryption key. The first 20.000 requests per month to KMS
+are part of the *Free Tier* and after that 10.000 req/month are 0,03$. So
+even with a big team and lots of entries, this will propably never apear on
+your invoice.
 
 ## IAM permissions
 With this example policy one can use all features of this tool. If you want
@@ -53,7 +62,7 @@ Usage:
 When enabling 2FA for an online service, you probably get an QR-Code which
 you could scan e.g. with the Google Authenticator app on your smartphone.
 Sometimes the website shows your the seed right next to the image (look for a
-quite long, random, alphanueric string). If not, you have to use a barcode
+quite long, random, alphanumeric string). If not, you have to use a barcode
 scanner app to get the content of the QR-Code and extract the seed out of
 this [special
 URI](https://github.com/google/google-authenticator/wiki/Key-Uri-Format).

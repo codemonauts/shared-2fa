@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/codemonauts/shared-2fa/config"
@@ -17,20 +18,37 @@ var listCmd = &cobra.Command{
 	Short: "List all available entries",
 	Run: func(cmd *cobra.Command, args []string) {
 		sess, err := session.NewSessionWithOptions(session.Options{})
-		svc := ssm.New(sess, aws.NewConfig().WithRegion(config.AWS_REGION))
-		input := &ssm.DescribeParametersInput{}
-		data, err := svc.DescribeParameters(input)
 		if err != nil {
-			fmt.Errorf(err.Error())
+			fmt.Println(err.Error())
 			return
 		}
+		svc := ssm.New(sess, aws.NewConfig().WithRegion(config.AWS_REGION))
+		input := &ssm.DescribeParametersInput{}
 
-		fmt.Println("Found the following 2FA entries:")
-		for _, entry := range data.Parameters {
-			if strings.HasPrefix(*entry.Name, config.NAME_PREFIX) {
-				cleanName := strings.Replace(*entry.Name, config.NAME_PREFIX, "", 1)
-				fmt.Printf("- %s\n", cleanName)
+		var entries []string
+
+		svc.DescribeParametersPages(input,
+			func(page *ssm.DescribeParametersOutput, lastPage bool) bool {
+				for _, entry := range page.Parameters {
+					// Only parameters with our defined prefix are part of this tool
+					if strings.HasPrefix(*entry.Name, config.NAME_PREFIX) {
+						cleanName := strings.Replace(*entry.Name, config.NAME_PREFIX, "", 1)
+						entries = append(entries, cleanName)
+					}
+				}
+				return !lastPage
+			})
+
+		if len(entries) > 0 {
+			// Sort entries alphabetically
+			sort.Strings(entries)
+
+			fmt.Println("Found the following entries:")
+			for _, entry := range entries {
+				fmt.Printf("- %s\n", entry)
 			}
+		} else {
+			fmt.Println("Found no entries.")
 		}
 	},
 }
